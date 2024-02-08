@@ -1,22 +1,25 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/nOm-1986/goApi_web/internal/user"
 )
 
 func main() {
 	router := mux.NewRouter()
 
-	//port := ":3333"
+	userEnd := user.MakeEndpoints()
+
 	//Routes
-	router.HandleFunc("/v1/users", getUsers).Methods("get")
-	router.HandleFunc("/v1/courses", getCourses).Methods("get")
+	router.HandleFunc("/v1/users", userEnd.Create).Methods("POST")
+	router.HandleFunc("/v1/users", userEnd.GetAll).Methods("GET")
+	router.HandleFunc("/v1/users", userEnd.Update).Methods("PATCH")
+	router.HandleFunc("/v1/users", userEnd.Delete).Methods("DELETE")
 
 	srv := &http.Server{
 		//Handler:      http.TimeoutHandler(router, time.Second*3, "¡¡¡ Timeout !!!"),
@@ -25,19 +28,10 @@ func main() {
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
+	fmt.Println("!!!! Starting server in port 127.0.0.1:8000 !!!!")
 	err := srv.ListenAndServe()
 
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func getUsers(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(7 * time.Second)
-	fmt.Println("Sigue")
-	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-}
-
-func getCourses(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]string{"ok": "course"})
 }

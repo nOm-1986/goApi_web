@@ -23,6 +23,10 @@ type (
 		Email     string `json:"email"`
 		Phone     string `json:"phone"`
 	}
+
+	ErrorRes struct {
+		Error string `json:"error"`
+	}
 )
 
 func MakeEndpoints() Endpoints {
@@ -35,14 +39,32 @@ func MakeEndpoints() Endpoints {
 	}
 }
 
+func fieldValidator(req CreateReq, w http.ResponseWriter, r *http.Request) {
+	if req.FirstName == "" {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(ErrorRes{"First name is required!!"})
+		return
+	}
+	if req.LastName == "" {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(ErrorRes{"Last name is required!!"})
+		return
+	}
+	if req.Email == "" {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
+	}
+}
+
 func makeCreateEndpoint() Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreateReq
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Invalid request format"})
 			return
 		}
-		fmt.Println(req)
+		fieldValidator(req, w, r)
 		json.NewEncoder(w).Encode(req)
 	}
 }

@@ -29,34 +29,17 @@ type (
 	}
 )
 
-func MakeEndpoints() Endpoints {
+func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
-		Create: makeCreateEndpoint(),
-		Get:    makeGetEndpoint(),
-		GetAll: makeGetAllEndpoint(),
-		Update: makeUpdateEndpoint(),
-		Delete: makeDeletEndpoint(),
+		Create: makeCreateEndpoint(s),
+		Get:    makeGetEndpoint(s),
+		GetAll: makeGetAllEndpoint(s),
+		Update: makeUpdateEndpoint(s),
+		Delete: makeDeletEndpoint(s),
 	}
 }
 
-func fieldValidator(req CreateReq, w http.ResponseWriter, r *http.Request) {
-	if req.FirstName == "" {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(ErrorRes{"First name is required!!"})
-		return
-	}
-	if req.LastName == "" {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(ErrorRes{"Last name is required!!"})
-		return
-	}
-	if req.Email == "" {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
-	}
-}
-
-func makeCreateEndpoint() Controller {
+func makeCreateEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreateReq
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -64,33 +47,54 @@ func makeCreateEndpoint() Controller {
 			json.NewEncoder(w).Encode(ErrorRes{"Invalid request format"})
 			return
 		}
-		fieldValidator(req, w, r)
+		if req.FirstName == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"First name is required!!"})
+			return
+		}
+		if req.LastName == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Last name is required!!"})
+			return
+		}
+		if req.Email == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
+			return
+		}
+
+		err := s.Create(req.FirstName, req.LastName, req.Email, req.Phone)
+		if err != nil {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
+			return
+		}
 		json.NewEncoder(w).Encode(req)
 	}
 }
 
-func makeGetEndpoint() Controller {
+func makeGetEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Get user")
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	}
 }
 
-func makeGetAllEndpoint() Controller {
+func makeGetAllEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Get all users")
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	}
 }
 
-func makeUpdateEndpoint() Controller {
+func makeUpdateEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Update user")
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	}
 }
 
-func makeDeletEndpoint() Controller {
+func makeDeletEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Delete user")
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})

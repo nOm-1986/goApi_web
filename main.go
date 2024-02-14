@@ -4,14 +4,32 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/nOm-1986/goApi_web/internal/user"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func main() {
 	router := mux.NewRouter()
+	_ = godotenv.Load()
+	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("DATABASE_USER"),
+		os.Getenv("DATABASE_PASSWORD"),
+		os.Getenv("DATABASE_HOST"),
+		os.Getenv("DATABASE_PORT"),
+		os.Getenv("DATABASE_NAME"),
+	)
+	db, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	//Modo debug
+	db = db.Debug()
+
+	//Crear la tabla
+	_ = db.AutoMigrate(&user.User{})
 
 	userSrv := user.NewService()
 	userEnd := user.MakeEndpoints(userSrv)

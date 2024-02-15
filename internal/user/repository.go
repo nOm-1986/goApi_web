@@ -9,6 +9,8 @@ import (
 
 type Repository interface {
 	Create(user *User) error
+	Get(id string) (*User, error)
+	GetAll() ([]User, error)
 }
 
 type repo struct {
@@ -32,4 +34,24 @@ func (repo *repo) Create(user *User) error {
 	}
 	repo.log.Println("User created with id: ", user.ID)
 	return nil
+}
+
+func (repo *repo) GetAll() ([]User, error) {
+	var u []User
+	//La info que nos traiga sea acorde a la estructura usuario
+	result := repo.db.Model(&u).Order("created_at desc").Find(&u)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return u, nil
+
+}
+
+func (repo *repo) Get(id string) (*User, error) {
+	user := User{ID: id}
+	result := repo.db.First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
 }

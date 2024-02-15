@@ -39,8 +39,9 @@ func main() {
 	//Routes
 	router.HandleFunc("/v1/users", userEnd.Create).Methods("POST")
 	router.HandleFunc("/v1/users", userEnd.GetAll).Methods("GET")
-	router.HandleFunc("/v1/users", userEnd.Update).Methods("PATCH")
-	router.HandleFunc("/v1/users", userEnd.Delete).Methods("DELETE")
+	router.HandleFunc("/v1/users/{id}", userEnd.Get).Methods("GET")
+	router.HandleFunc("/v1/users/{id}", userEnd.Update).Methods("PATCH")
+	router.HandleFunc("/v1/users/{id}", userEnd.Delete).Methods("DELETE")
 
 	srv := &http.Server{
 		//Handler:      http.TimeoutHandler(router, time.Second*3, "¡¡¡ Timeout !!!"),

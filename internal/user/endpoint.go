@@ -63,13 +63,13 @@ func makeCreateEndpoint(s Service) Controller {
 			return
 		}
 
-		err := s.Create(req.FirstName, req.LastName, req.Email, req.Phone)
+		user, err := s.Create(req.FirstName, req.LastName, req.Email, req.Phone)
 		if err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
+			json.NewEncoder(w).Encode(ErrorRes{err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(req)
+		json.NewEncoder(w).Encode(user)
 	}
 }
 

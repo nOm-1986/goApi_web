@@ -17,6 +17,7 @@ import (
 func main() {
 	router := mux.NewRouter()
 	_ = godotenv.Load()
+	loger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DATABASE_USER"),
 		os.Getenv("DATABASE_PASSWORD"),
@@ -31,7 +32,8 @@ func main() {
 	//Crear la tabla
 	_ = db.AutoMigrate(&user.User{})
 
-	userSrv := user.NewService()
+	userRepo := user.NewRepo(loger, db)
+	userSrv := user.NewService(loger, userRepo)
 	userEnd := user.MakeEndpoints(userSrv)
 
 	//Routes

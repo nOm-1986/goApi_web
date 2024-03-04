@@ -77,6 +77,7 @@ func makeCreateEndpoint(s Service) Controller {
 
 func makeGetEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Mapa con los parametros de la ruta.
 		path := mux.Vars(r)
 		id := path["id"]
 		user, err := s.Get(id)

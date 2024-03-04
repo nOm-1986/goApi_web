@@ -40,6 +40,7 @@ func (repo *repo) Create(user *User) error {
 func (repo *repo) GetAll() ([]User, error) {
 	var u []User
 	//La info que nos traiga sea acorde a la estructura usuario
+	//El Find lo que hace es poblar la data en la estructura
 	result := repo.db.Model(&u).Order("created_at desc").Find(&u)
 	if result.Error != nil {
 		return nil, result.Error

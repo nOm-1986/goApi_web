@@ -39,7 +39,7 @@ func main() {
 	//Routes
 	router.HandleFunc("/v1/users", userEnd.Create).Methods("POST")
 	router.HandleFunc("/v1/users", userEnd.GetAll).Methods("GET")
-	router.HandleFunc("/v1/users/{id}", userEnd.Get).Methods("GET")
+	router.HandleFunc("/v1/users/{id:[0-9a-z/-]+}", userEnd.Get).Methods("GET")
 	router.HandleFunc("/v1/users/{id}", userEnd.Update).Methods("PATCH")
 	router.HandleFunc("/v1/users/{id}", userEnd.Delete).Methods("DELETE")
 

@@ -1,0 +1,22 @@
+Ver las imagenes
+    docker images
+
+Ver contenedores que estan corriendo
+    docker ps
+
+Ver contenedores que ya corrieron
+    docker ps -a
+
+    docker inspect
+
+Ver el log
+    docker logs +id
+
+Construir el docker:
+    docker compose build
+
+
+EJECUTAR EL CONTENEDOR
+    docker compose up
+EJECUTAR EN SEGUNDO PLANO
+    docker compose up -d 

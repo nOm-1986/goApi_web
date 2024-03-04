@@ -41,7 +41,7 @@ func main() {
 	router.HandleFunc("/v1/users", userEnd.GetAll).Methods("GET")
 	router.HandleFunc("/v1/users/{id:[0-9a-z/-]+}", userEnd.Get).Methods("GET")
 	router.HandleFunc("/v1/users/{id}", userEnd.Update).Methods("PATCH")
-	router.HandleFunc("/v1/users/{id}", userEnd.Delete).Methods("DELETE")
+	router.HandleFunc("/v1/users/{id:[0-9a-z/-]+}", userEnd.Delete).Methods("DELETE")
 
 	srv := &http.Server{
 		//Handler:      http.TimeoutHandler(router, time.Second*3, "¡¡¡ Timeout !!!"),

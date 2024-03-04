@@ -111,7 +111,13 @@ func makeUpdateEndpoint(s Service) Controller {
 
 func makeDeletEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Delete user")
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+		path := mux.Vars(r)
+		id := path["id"]
+		if err := s.Delete(id); err != nil {
+			w.WriteHeader(404)
+			json.NewEncoder(w).Encode(ErrorRes{"User does not exist"})
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]string{"data": "User deleted succesfully"})
 	}
 }

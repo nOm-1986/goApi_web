@@ -32,8 +32,10 @@ type (
 		Phone     *string `json:"phone"`
 	}
 
-	ErrorRes struct {
-		Error string `json:"error"`
+	Response struct {
+		Status int         `json:"status"`
+		Data   interface{} `json:"data,omitempty"` //omit empty, Si viene vacío lo omita
+		Err    string      `json:"error,omitempty"`
 	}
 )
 
@@ -52,32 +54,32 @@ func makeCreateEndpoint(s Service) Controller {
 		var req CreateReq
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Invalid request format"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Invalid request format"})
 			return
 		}
 		if req.FirstName == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"First name is required!!"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "First name is required!!"})
 			return
 		}
 		if req.LastName == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Last name is required!!"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Last name is required!!"})
 			return
 		}
 		if req.Email == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Email is required!!"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Email is required!!"})
 			return
 		}
 
 		user, err := s.Create(req.FirstName, req.LastName, req.Email, req.Phone)
 		if err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{err.Error()})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(user)
+		json.NewEncoder(w).Encode(&Response{Status: 200, Data: user})
 	}
 }
 
@@ -89,10 +91,10 @@ func makeGetEndpoint(s Service) Controller {
 		user, err := s.Get(id)
 		if err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"User does not exist"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "User does not exist"})
 			return
 		}
-		json.NewEncoder(w).Encode(user)
+		json.NewEncoder(w).Encode(&Response{Status: 200, Data: user})
 	}
 }
 
@@ -101,10 +103,10 @@ func makeGetAllEndpoint(s Service) Controller {
 		users, err := s.GetAll()
 		if err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{err.Error()})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(users)
+		json.NewEncoder(w).Encode(&Response{Status: 200, Data: users})
 	}
 }
 
@@ -114,23 +116,23 @@ func makeUpdateEndpoint(s Service) Controller {
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Invalid request format"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Invalid request format"})
 			return
 		}
 		//Validations
 		if req.FirstName != nil && *req.FirstName == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"First name is required"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "First name is required"})
 			return
 		}
 		if req.LastName != nil && *req.LastName == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Last name is required"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Last name is required"})
 			return
 		}
 		if req.Email != nil && *req.Email == "" {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"Email is required"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "Email is required"})
 			return
 		}
 
@@ -139,7 +141,7 @@ func makeUpdateEndpoint(s Service) Controller {
 
 		if err := s.Update(id, req.FirstName, req.LastName, req.Email, req.Phone); err != nil {
 			w.WriteHeader(400)
-			json.NewEncoder(w).Encode(ErrorRes{"User does not exits"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "User does not exits"})
 			return
 		}
 
@@ -153,7 +155,7 @@ func makeDeletEndpoint(s Service) Controller {
 		id := path["id"]
 		if err := s.Delete(id); err != nil {
 			w.WriteHeader(404)
-			json.NewEncoder(w).Encode(ErrorRes{"User does not exist"})
+			json.NewEncoder(w).Encode(&Response{Status: 400, Err: "User does not exist"})
 			return
 		}
 		json.NewEncoder(w).Encode(map[string]string{"data": "User deleted succesfully"})

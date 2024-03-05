@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -24,6 +23,13 @@ type (
 		LastName  string `json:"last_name"`
 		Email     string `json:"email"`
 		Phone     string `json:"phone"`
+	}
+
+	UpdateReq struct {
+		FirstName *string `json:"first_name"`
+		LastName  *string `json:"last_name"`
+		Email     *string `json:"email"`
+		Phone     *string `json:"phone"`
 	}
 
 	ErrorRes struct {
@@ -104,8 +110,40 @@ func makeGetAllEndpoint(s Service) Controller {
 
 func makeUpdateEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Update user")
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+		var req UpdateReq
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Invalid request format"})
+			return
+		}
+		//Validations
+		if req.FirstName != nil && *req.FirstName == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"First name is required"})
+			return
+		}
+		if req.LastName != nil && *req.LastName == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Last name is required"})
+			return
+		}
+		if req.Email != nil && *req.Email == "" {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"Email is required"})
+			return
+		}
+
+		path := mux.Vars(r)
+		id := path["id"]
+
+		if err := s.Update(id, req.FirstName, req.LastName, req.Email, req.Phone); err != nil {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(ErrorRes{"User does not exits"})
+			return
+		}
+
+		json.NewEncoder(w).Encode(map[string]string{"data": "Updated successfully"})
 	}
 }
 

@@ -12,6 +12,8 @@ type Repository interface {
 	Get(id string) (*User, error)
 	GetAll() ([]User, error)
 	Delete(id string) error
+	// Se pasan por puntero para que lleguen nil y poder identificarlos, si no se agregar el puntero llegan vacíos.
+	Update(id string, firstName *string, lastName *string, email *string, phone *string) error
 }
 
 type repo struct {
@@ -41,29 +43,48 @@ func (repo *repo) GetAll() ([]User, error) {
 	var u []User
 	//La info que nos traiga sea acorde a la estructura usuario
 	//El Find lo que hace es poblar la data en la estructura
-	result := repo.db.Model(&u).Order("created_at desc").Find(&u)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := repo.db.Model(&u).Order("created_at desc").Find(&u).Error; err != nil {
+		return nil, err
 	}
 	return u, nil
-
 }
 
 func (repo *repo) Get(id string) (*User, error) {
 	user := User{ID: id}
-	result := repo.db.First(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := repo.db.First(&user).Error; err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
 
 func (repo *repo) Delete(id string) error {
 	user := User{ID: id}
-	result := repo.db.Delete(&user)
+	if err := repo.db.Delete(&user).Error; err != nil {
+		return err
+	}
+	return nil
+}
 
-	if result.Error != nil {
-		return result.Error
+// Remember that if the field came nil, it was due it wat not sent
+func (repo *repo) Update(id string, firstName *string, lastName *string, email *string, phone *string) error {
+
+	values := make(map[string]interface{})
+
+	if firstName != nil {
+		values["first_name"] = *firstName
+	}
+	if lastName != nil {
+		values["last_name"] = *lastName
+	}
+	if email != nil {
+		values["email"] = *email
+	}
+	if phone != nil {
+		values["phone"] = *phone
+	}
+
+	if err := repo.db.Model(&User{}).Where("id = ?", id).Updates(values).Error; err != nil {
+		return err
 	}
 	return nil
 }

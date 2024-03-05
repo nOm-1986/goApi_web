@@ -4,33 +4,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/nOm-1986/goApi_web/internal/user"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/nOm-1986/goApi_web/pkg/bootstrap"
 )
 
 func main() {
 	router := mux.NewRouter()
 	_ = godotenv.Load()
-	loger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
-	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		os.Getenv("DATABASE_USER"),
-		os.Getenv("DATABASE_PASSWORD"),
-		os.Getenv("DATABASE_HOST"),
-		os.Getenv("DATABASE_PORT"),
-		os.Getenv("DATABASE_NAME"),
-	)
-	db, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	//Modo debug
-	db = db.Debug()
+	loger := bootstrap.InitLogger()
 
-	//Crear la tabla
-	_ = db.AutoMigrate(&user.User{})
+	db, err := bootstrap.DBConnection()
+	if err != nil {
+		loger.Fatal(err)
+	}
 
 	userRepo := user.NewRepo(loger, db)
 	userSrv := user.NewService(loger, userRepo)
@@ -51,9 +41,9 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 	}
 	fmt.Println("!!!! Starting server in port 127.0.0.1:8000 !!!!")
-	err := srv.ListenAndServe()
+	err2 := srv.ListenAndServe()
 
-	if err != nil {
-		log.Fatal(err)
+	if err2 != nil {
+		log.Fatal(err2)
 	}
 }

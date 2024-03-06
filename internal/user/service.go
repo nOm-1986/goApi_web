@@ -2,18 +2,26 @@ package user
 
 import "log"
 
-type Service interface {
-	Create(firstName, lastName, email, phone string) (*User, error)
-	Get(id string) (*User, error)
-	GetAll() ([]User, error)
-	Delete(id string) error
-	Update(id string, firstName *string, lastName *string, email *string, phone *string) error
-}
+type (
+	Service interface {
+		Create(firstName, lastName, email, phone string) (*User, error)
+		Get(id string) (*User, error)
+		GetAll(filters Filters) ([]User, error)
+		Delete(id string) error
+		Update(id string, firstName *string, lastName *string, email *string, phone *string) error
+		Count(filters Filters) (int, error)
+	}
 
-type service struct {
-	log  *log.Logger
-	repo Repository
-}
+	service struct {
+		log  *log.Logger
+		repo Repository
+	}
+
+	Filters struct {
+		FirstName string
+		LastName  string
+	}
+)
 
 func NewService(log *log.Logger, repo Repository) Service {
 	return &service{
@@ -37,8 +45,8 @@ func (s service) Create(firstName, lastName, email, phone string) (*User, error)
 	return &user, nil
 }
 
-func (s service) GetAll() ([]User, error) {
-	users, err := s.repo.GetAll()
+func (s service) GetAll(filters Filters) ([]User, error) {
+	users, err := s.repo.GetAll(filters)
 	if err != nil {
 		return nil, err
 	}
@@ -59,4 +67,8 @@ func (s service) Delete(id string) error {
 
 func (s service) Update(id string, firstName *string, lastName *string, email *string, phone *string) error {
 	return s.repo.Update(id, firstName, lastName, email, phone)
+}
+
+func (s service) Count(filters Filters) (int, error) {
+	return s.repo.Count(filters)
 }

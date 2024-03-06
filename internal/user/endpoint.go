@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/nOm-1986/goApi_web/pkg/meta"
 )
 
 type (
@@ -34,8 +35,9 @@ type (
 
 	Response struct {
 		Status int         `json:"status"`
-		Data   interface{} `json:"data,omitempty"` //omit empty, Si viene vacío lo omita
+		Data   interface{} `json:"data,omitempty"` //omit empty, Si viene vacío lo omita, interface es para poner lo que sea.
 		Err    string      `json:"error,omitempty"`
+		Meta   *meta.Meta  `json:"meta,omitempty"`
 	}
 )
 
@@ -100,13 +102,36 @@ func makeGetEndpoint(s Service) Controller {
 
 func makeGetAllEndpoint(s Service) Controller {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := s.GetAll()
+		//URL.Query devuelve el objeto de los parametros que vienen por URL
+		urlParams := r.URL.Query()
+
+		filters := Filters{
+			FirstName: urlParams.Get("first_name"),
+			LastName:  urlParams.Get("last_name"),
+		}
+
+		count, err := s.Count(filters)
+		if err != nil {
+			w.WriteHeader(500)
+			json.NewEncoder(w).Encode(&Response{Status: 500, Err: err.Error()})
+			return
+		}
+
+		meta, err := meta.NewMeta(count)
+
+		if err != nil {
+			w.WriteHeader(500)
+			json.NewEncoder(w).Encode(&Response{Status: 500, Err: err.Error()})
+			return
+		}
+
+		users, err := s.GetAll(filters)
 		if err != nil {
 			w.WriteHeader(400)
 			json.NewEncoder(w).Encode(&Response{Status: 400, Err: err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(&Response{Status: 200, Data: users})
+		json.NewEncoder(w).Encode(&Response{Status: 200, Data: users, Meta: meta})
 	}
 }
 

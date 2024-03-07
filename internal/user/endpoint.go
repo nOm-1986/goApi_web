@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/nOm-1986/goApi_web/pkg/meta"
@@ -110,6 +111,9 @@ func makeGetAllEndpoint(s Service) Controller {
 			LastName:  urlParams.Get("last_name"),
 		}
 
+		limit, _ := strconv.Atoi(urlParams.Get("limit"))
+		page, _ := strconv.Atoi(urlParams.Get("page"))
+
 		count, err := s.Count(filters)
 		if err != nil {
 			w.WriteHeader(500)
@@ -117,7 +121,7 @@ func makeGetAllEndpoint(s Service) Controller {
 			return
 		}
 
-		meta, err := meta.NewMeta(count)
+		meta, err := meta.NewMeta(page, limit, count)
 
 		if err != nil {
 			w.WriteHeader(500)
@@ -125,7 +129,7 @@ func makeGetAllEndpoint(s Service) Controller {
 			return
 		}
 
-		users, err := s.GetAll(filters)
+		users, err := s.GetAll(filters, meta.Offset(), meta.Limit())
 		if err != nil {
 			w.WriteHeader(400)
 			json.NewEncoder(w).Encode(&Response{Status: 400, Err: err.Error()})

@@ -12,7 +12,7 @@ import (
 type Repository interface {
 	Create(user *User) error
 	Get(id string) (*User, error)
-	GetAll(filters Filters) ([]User, error)
+	GetAll(filters Filters, offset, limit int) ([]User, error)
 	Delete(id string) error
 	// Se pasan por puntero para que lleguen nil y poder identificarlos, si no se agregar el puntero llegan vacíos.
 	Update(id string, firstName *string, lastName *string, email *string, phone *string) error
@@ -42,7 +42,7 @@ func (repo *repo) Create(user *User) error {
 	return nil
 }
 
-func (repo *repo) GetAll(filters Filters) ([]User, error) {
+func (repo *repo) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	var u []User
 
 	//La info que nos traiga sea acorde a la estructura usuario
@@ -52,6 +52,8 @@ func (repo *repo) GetAll(filters Filters) ([]User, error) {
 	// }
 	tx := repo.db.Model(&u)
 	tx = applyFilters(tx, filters)
+	//Gorm ya trae para implementar el offset
+	tx = tx.Limit(limit).Offset(offset)
 	//result := tx.Order("created_at desc").Limit(5).Find(&u) - Para agregar un límite
 	result := tx.Order("created_at desc").Find(&u)
 	if result.Error != nil {

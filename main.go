@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/nOm-1986/goApi_web/internal/course"
 	"github.com/nOm-1986/goApi_web/internal/user"
 	"github.com/nOm-1986/goApi_web/pkg/bootstrap"
 )
@@ -26,12 +27,18 @@ func main() {
 	userSrv := user.NewService(loger, userRepo)
 	userEnd := user.MakeEndpoints(userSrv)
 
+	courseRepo := course.NewRepo(loger, db)
+	courseSrv := course.NewService(loger, courseRepo)
+	courseEnd := course.MakeEndpoints(courseSrv)
+
 	//Routes
 	router.HandleFunc("/v1/users", userEnd.Create).Methods("POST")
 	router.HandleFunc("/v1/users", userEnd.GetAll).Methods("GET")
 	router.HandleFunc("/v1/users/{id:[0-9a-z/-]+}", userEnd.Get).Methods("GET")
 	router.HandleFunc("/v1/users/{id}", userEnd.Update).Methods("PATCH")
 	router.HandleFunc("/v1/users/{id:[0-9a-z/-]+}", userEnd.Delete).Methods("DELETE")
+
+	router.HandleFunc("/v1/course", courseEnd.Create).Methods("POST")
 
 	srv := &http.Server{
 		//Handler:      http.TimeoutHandler(router, time.Second*3, "¡¡¡ Timeout !!!"),

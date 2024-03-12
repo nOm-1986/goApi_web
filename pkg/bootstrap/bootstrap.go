@@ -5,8 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/nOm-1986/goApi_web/internal/course"
-	"github.com/nOm-1986/goApi_web/internal/user"
+	"github.com/nOm-1986/goApi_web/internal/domain"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -30,10 +29,10 @@ func DBConnection() (*gorm.DB, error) {
 	}
 
 	if os.Getenv("DATABASE_MIGRATE") == "true" {
-		if err := db.AutoMigrate(&user.User{}); err != nil {
+		if err := db.AutoMigrate(&domain.User{}); err != nil {
 			return nil, err
 		}
-		if err := db.AutoMigrate(&course.Course{}); err != nil {
+		if err := db.AutoMigrate(&domain.Course{}); err != nil {
 			return nil, err
 		}
 	}

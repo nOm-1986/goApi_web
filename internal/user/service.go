@@ -1,12 +1,16 @@
 package user
 
-import "log"
+import (
+	"log"
+
+	"github.com/nOm-1986/goApi_web/internal/domain"
+)
 
 type (
 	Service interface {
-		Create(firstName, lastName, email, phone string) (*User, error)
-		Get(id string) (*User, error)
-		GetAll(filters Filters, offset, limit int) ([]User, error)
+		Create(firstName, lastName, email, phone string) (*domain.User, error)
+		Get(id string) (*domain.User, error)
+		GetAll(filters Filters, offset, limit int) ([]domain.User, error)
 		Delete(id string) error
 		Update(id string, firstName *string, lastName *string, email *string, phone *string) error
 		Count(filters Filters) (int, error)
@@ -30,10 +34,10 @@ func NewService(log *log.Logger, repo Repository) Service {
 	}
 }
 
-//I can improve it making it as a variadic function
-func (s service) Create(firstName, lastName, email, phone string) (*User, error) {
+// I can improve it making it as a variadic function
+func (s service) Create(firstName, lastName, email, phone string) (*domain.User, error) {
 	s.log.Println("Create user service")
-	user := User{
+	user := domain.User{
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
@@ -45,7 +49,7 @@ func (s service) Create(firstName, lastName, email, phone string) (*User, error)
 	return &user, nil
 }
 
-func (s service) GetAll(filters Filters, offset, limit int) ([]User, error) {
+func (s service) GetAll(filters Filters, offset, limit int) ([]domain.User, error) {
 	users, err := s.repo.GetAll(filters, offset, limit)
 	if err != nil {
 		return nil, err
@@ -53,7 +57,7 @@ func (s service) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	return users, nil
 }
 
-func (s service) Get(id string) (*User, error) {
+func (s service) Get(id string) (*domain.User, error) {
 	user, err := s.repo.Get(id)
 	if err != nil {
 		return nil, err

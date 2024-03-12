@@ -6,14 +6,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nOm-1986/goApi_web/internal/domain"
 	"gorm.io/gorm"
 )
 
 type (
 	Repository interface {
-		Create(course *Course) error
-		GetAll(filters Filters, offset, limit int) ([]Course, error)
-		Get(id string) (*Course, error)
+		Create(course *domain.Course) error
+		GetAll(filters Filters, offset, limit int) ([]domain.Course, error)
+		Get(id string) (*domain.Course, error)
 		Update(id string, name *string, startDate, endDate *time.Time) error
 		Count(filters Filters) (int, error)
 	}
@@ -31,7 +32,7 @@ func NewRepo(l *log.Logger, db *gorm.DB) Repository {
 	}
 }
 
-func (repo *repo) Create(course *Course) error {
+func (repo *repo) Create(course *domain.Course) error {
 	if err := repo.db.Create(course).Error; err != nil {
 		repo.log.Printf("error: %v", err)
 		return err
@@ -40,8 +41,8 @@ func (repo *repo) Create(course *Course) error {
 	return nil
 }
 
-func (repo *repo) GetAll(filters Filters, offset, limit int) ([]Course, error) {
-	var courses []Course
+func (repo *repo) GetAll(filters Filters, offset, limit int) ([]domain.Course, error) {
+	var courses []domain.Course
 	tx := repo.db.Model(&courses)
 	tx = applyFilters(tx, filters)
 	//Gorm ya trae para implementar el offset
@@ -53,8 +54,8 @@ func (repo *repo) GetAll(filters Filters, offset, limit int) ([]Course, error) {
 	return courses, nil
 }
 
-func (repo *repo) Get(id string) (*Course, error) {
-	course := Course{ID: id}
+func (repo *repo) Get(id string) (*domain.Course, error) {
+	course := domain.Course{ID: id}
 	if err := repo.db.First(&course).Error; err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func (repo *repo) Update(id string, name *string, startDate, endDate *time.Time)
 	if endDate != nil {
 		values["end_date"] = *endDate
 	}
-	if err := repo.db.Model(&Course{}).Where("id = ?", id).Updates(values); err.Error != nil {
+	if err := repo.db.Model(&domain.Course{}).Where("id = ?", id).Updates(values); err.Error != nil {
 		return err.Error
 	}
 
@@ -81,7 +82,7 @@ func (repo *repo) Update(id string, name *string, startDate, endDate *time.Time)
 
 func (repo *repo) Count(filters Filters) (int, error) {
 	var count int64
-	tx := repo.db.Model(&Course{})
+	tx := repo.db.Model(&domain.Course{})
 	tx = applyFilters(tx, filters)
 	if err := tx.Count(&count).Error; err != nil {
 		return 0, err

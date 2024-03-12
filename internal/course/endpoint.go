@@ -2,6 +2,7 @@ package course
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -165,6 +166,9 @@ func makeUpdateEndpoint(s Service) Controller {
 
 		path := mux.Vars(r)
 		id := path["id"]
+
+		fmt.Println("Id:", id)
+		fmt.Println("Nombre:", req.Name)
 
 		if err := s.Update(id, req.Name, req.StartDate, req.EndDate); err != nil {
 			w.WriteHeader(404)
